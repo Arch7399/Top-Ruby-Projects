@@ -1,6 +1,7 @@
 require 'csv'
 require 'google/apis/civicinfo_v2'
 require 'erb'
+require 'time'
 
 def clean_zipcode(zipcode)
   zipcode.to_s.rjust(5,"0")[0..4]
@@ -35,6 +36,14 @@ def legislators_by_zipcode(zip)
   end
 end
 
+
+def time_parser(time, array1, array2)
+  
+  time_object = Time.strptime(time, '%m/%d/%y %H:%M')
+  array1 << [time_object.hour]
+  array2 << [Date::DAYNAMES[time_object.wday]]
+end
+
 def save_thank_you_letter(id,form_letter)
   Dir.mkdir('output') unless Dir.exist?('output')
 
@@ -55,15 +64,23 @@ contents = CSV.open(
 
 template_letter = File.read('./root/form_letter.erb')
 erb_template = ERB.new template_letter
+busy_hour = []
+busy_day = []
 
 contents.each do |row|
+
   id = row[0]
   name = row[:first_name]
   zipcode = clean_zipcode(row[:zipcode])
   phone = clean_phone_number(row[:homephone])
   legislators = legislators_by_zipcode(zipcode)
+  time_parser(row[:regdate], busy_hour, busy_day)
 
   form_letter = erb_template.result(binding)
 
   save_thank_you_letter(id,form_letter)
 end
+
+puts "Most busy hour: #{busy_hour.group_by{|i| i}.values.max_by(&:size).first}"
+puts "Most busy day: #{busy_day.group_by{|i| i}.values.max_by(&:size).first}"
+
