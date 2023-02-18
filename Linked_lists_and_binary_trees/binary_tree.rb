@@ -45,6 +45,59 @@ class Tree
       end
       return node
     end
+
+    def level_order(node=@root, &block)
+        queue = []
+        queue << node
+        array = []
+        while !queue.empty?
+          dequeued = queue.shift
+          if block_given?
+            yield dequeued.data
+          else
+            array << dequeued
+          end
+          queue << dequeued.left if !dequeued.left.nil?
+          queue << dequeued.right if !dequeued.right.nil?
+        end
+        return array if array.any?
+    end
+
+    def inorder(node=@root, &block)
+      if node.nil?
+        return
+      end
+      inorder(node.left, &block)
+        yield node.data
+      inorder(node.right, &block)
+    end
+
+    def preorder(node=@root, &block)
+      if node.nil?
+        return
+      end
+      yield node.data
+      preorder(node.left, &block)
+      preorder(node.right, &block)
+    end
+
+    def postorder(node=@root, &block)
+      if node.nil?
+        return
+      end
+      postorder(node.left, &block)
+      postorder(node.right, &block)
+      yield node.data
+    end
+
+    def print_traversals
+      puts "Inorder traversal:"
+      inorder { |data| puts data }
+      puts "Preorder traversal:"
+      preorder { |data| puts data }
+      puts "Postorder traversal:"
+      postorder { |data| puts data }
+    end
   
     def delete(value)
       return nil if @root.nil?
@@ -59,7 +112,7 @@ class Tree
         replace_node(replacee, replacee.right)
       elsif replacee.right.nil?
         replace_node(replacee, replacee.left)
-      else
+      else #rearrange 2 child nodes
         replacer = find_successor(node)
         replace_node(replacee, replacer)
       end
@@ -128,7 +181,11 @@ end
   
   array = [1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324]
   my_tree = Tree.new(array)
+  #my_tree.level_order do |data|
+  #  sorted << data
+  #end
+  my_tree.print_traversals
+
   puts my_tree.pretty_print
-  puts my_tree.delete(23)
-  puts my_tree.pretty_print
+
   
