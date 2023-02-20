@@ -91,12 +91,34 @@ class Tree
     end
 
     def print_traversals
+      puts "Level order traversal:"
+      level_order { |data| puts data }
       puts "Inorder traversal:"
       inorder { |data| puts data }
       puts "Preorder traversal:"
       preorder { |data| puts data }
       puts "Postorder traversal:"
       postorder { |data| puts data }
+    end
+
+    def balanced?(node=@root)
+      return true if node.nil?
+
+      left_h = height(node.left)
+      right_h = height(node.right)
+
+      if (left_h - right_h).abs > 1
+        return false 
+      else
+        return balanced?(node.left) && balanced?(node.right)
+      end
+    end
+
+    def height(node=@root)
+      return 0 if node.nil?
+      left_height = height(node.left)
+      right_height = height(node.right)
+      return 1 + [left_height, right_height].max
     end
   
     def delete(value)
@@ -179,13 +201,10 @@ class Tree
 end
 
   
-  array = [1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324]
+  array = (Array.new(15) { rand(1..100) })
   my_tree = Tree.new(array)
-  #my_tree.level_order do |data|
-  #  sorted << data
-  #end
+
+  puts my_tree.balanced?
+
   my_tree.print_traversals
-
-  puts my_tree.pretty_print
-
   
